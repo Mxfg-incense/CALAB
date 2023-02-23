@@ -1,6 +1,5 @@
 # CALAB
 
-
 # Lab2
 
 1. How do you **pass command line arguments** to a program when using gdb?
@@ -27,7 +26,10 @@
 
 return a pointer to the stack memory (point to local varible `v`) which is invalid after returning
 
-return an instance in the stack memory
+return by value may lead to following problems:
+
+1. Forget `free(v.data)`
+2. `vector` is a large object, we often pass by value to avoid coping
 
 # The difference between pointer to int and pointer to an array of ints
 

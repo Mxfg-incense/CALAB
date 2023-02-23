@@ -72,7 +72,8 @@ vector_t *vector_new() {
     retval->data =(int *) malloc(sizeof(int));
 
     /* Check the data attribute of our vector to make sure we got memory */
-    if (retval->data==NULL) {				//Why is this line necessary?
+    if (retval->data==NULL) {
+        free(retval); // Why is this line necessary?
         allocation_failed();
     }
 
