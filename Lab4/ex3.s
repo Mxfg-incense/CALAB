@@ -51,8 +51,17 @@ print_newline:
 # Reverse the bits in a0 with a loop
 bitrev1:
     ### TODO: YOUR CODE HERE ###
+    li t0, 31 # t0 = 31
+    Loop:
+        beqz t0, exit
+        # fetch the i^th bit
+        slli t1, 1, 31
+        
 
-    ret
+
+
+    exit:
+    ret 
 
 # === The second version ===
 # Reverse the bits in a0. Only use li, and, or, slli, srli!
