@@ -163,8 +163,6 @@ Implement factorial and make sure that the program correctly outputs 3!, 4!, 8!,
 
 Show factorial.s to your TA, and run it in Venus, which should give the correct result.
 
-
-
 ## Lab 4
 
 [Computer Architecture I](https://toast-lab.sist.shanghaitech.edu.cn/courses/CS110@ShanghaiTech/Spring-2023/) [ShanghaiTech University](http://www.shanghaitech.edu.cn/)
@@ -211,19 +209,19 @@ Resolve all the calling convention errors in `ex1.s`, and be able to answer the 
 
 * What caused the errors in `simple_fn`, `naive_pow`, and `inc_arr` that were reported by the Venus CC checker?
 
-   `simple_fn`: Use the uninitialized register.
-`naive_pow`: miss prologue and epilogue.
-`inc_arr`: Forget save `s0` and `s1`, and `t0` need to be caller saved.
-
+  `simple_fn`: Use the uninitialized register.
+  `naive_pow`: miss prologue and epilogue.
+  `inc_arr`: Forget save `s0` and `s1`, and `t0` need to be caller saved.
 * In RISC-V, we call functions by jumping to them and storing the return address in the `ra` register. Does calling convention apply to the jumps to the `naive_pow_loop` or `naive_pow_end` labels?
 
-   No. Three function are executed sequentailly. 
+  No. Three function are executed sequentailly.
 * Why do we need to store `ra` in the prologue for `inc_arr`, but not in any other function?
 
-   Since `jal helper_fn` would overwrite the `ra`, and `helper_fn` would not call any other functions. 
+  Since `jal helper_fn` would overwrite the `ra`, and `helper_fn` would not call any other functions.
 * Why wasn't the calling convention error in `helper_fn` reported by the CC checker? (Hint: it's mentioned above in the exercise instructions.)
 
-    it will only look for bugs in functions that are exported with the .globl directive 
+  it will only look for bugs in functions that are exported with the .globl directive
+
 ### Testing
 
 After fixing the errors with `FIXME` in `ex1.s`, run Venus locally with the command from the beginning of this exercise to make sure the behavior of the functions hasn't changed and that you've remedied all calling convention violations.
@@ -311,6 +309,7 @@ Write two versions of a bitwise reverse function that, given a value in `a0`, re
   ```
 
   However, you are not going to implement this recursive algorithm. By using `li` to load several specific constants and `and`, `or`, `slli`, `srli` to modify the bits, the whole procedure can be parallelized. Here is the example:
+
   ```
   0101-1101
   1101-0101        # step1, k=8
@@ -333,3 +332,62 @@ When you've finished the two functions, running the code should provide you with
 #### Checkoff
 
 * Show your TA both versions of the function and its test run.
+
+## Lab 7
+
+[Computer Architecture I](https://toast-lab.sist.shanghaitech.edu.cn/courses/CS110@ShanghaiTech/Spring-2023/) [ShanghaiTech University](http://www.shanghaitech.edu.cn/)
+[Lab 6](https://toast-lab.sist.shanghaitech.edu.cn/courses/CS110@ShanghaiTech/Spring-2023/labs/lab6/lab6.html) Lab 7## PipeLine
+
+## Setup
+
+* Download source code from [here](https://toast-lab.sist.shanghaitech.edu.cn/courses/CS110@ShanghaiTech/Spring-2023/labs/lab7/lab07.tar)
+
+### Shift and Add Multiplier
+
+Here we review a simplest implementation of Multiplier: Shift and Add Multiplier. The block diagram is shown below:
+
+![](https://toast-lab.sist.shanghaitech.edu.cn/courses/CS110@ShanghaiTech/Spring-2023/labs/lab7/picture/block_diagram.png)
+
+In this practice, we assume the multiplier and multiplicand are 4-bit unsigned integers, and the output is an 8-bit unsigned integer. Hence the the whole multiplier can be flattened to a combined logic.
+
+### Practice
+
+#### 1. non_pipelined 4-bit multiplier
+
+We're going to finish a 4-bit multiplier.
+
+#### Action Item
+
+Complete the following steps to create the splitter circuit, and show this to your TA (remember to save). When you've completed the circuit, answer the question in the checkoff session.
+
+1. Open up the Exercise 1 schematic (`File->Open->ex1.circ`) and go to the `move_and_add` circuit.
+2. Connect all Gates, Plexers, and Arithmetic Blocks to implement a single shift and add step. Once you finished, the circuit should correctly decide whether to add or not to add the input multiplicand on the current result, and output the shifted multiplicand as well.
+3. Now refer to the `non-pipelined` circuit. Play with the inputs to see if your implementation is correct, and adjust your design if necessary.
+4. Let the propagation delay of an adder block be 45ns, the propagation delay of MUX be 20ns, and the propagation delay of a shifters block (since we have a const offset, it is very efficient) be 5ns. The register has a CLK-to-Q delay of 10ns, setup time of 10ns, and hold time of 5ns. Calculate the maximum clock rate at which this circuit can operate. Assume that both inputs come from clocked registers that receive their data from an outside source.
+
+#### [Checkoff]()
+
+* Show your TA the calculations you performed to find the maximum clock rate (non-pipelined).
+
+### 2. Pipe that line
+
+Recalling common operations in ALU, the shift addition multiplier we implemented is significantly inefficient compared to other operations, which reduces the latency performance of ALU. Try splitting the implementation of the shift addition multiplier into two stages to maximize the maximum clock cycle.
+
+In order to check that your pipelining still produces correct outputs, we will consider the outputs from the circuit "correct" if and only if it corresponds to the sequence of outputs the non-pipelined version would emit, bar some leading zeroes. For example, if for some sequence of inputs, the non-pipelined version emits the sequence [3, 5, 1, 2, 4, …]. Then, the correct pipelined circuit might emit the sequence [0, 3, 5, 1, 2, 4, …] for the same sequence of inputs. You can check this by simulating the circuit (using the "Simulate" menu dropdown) and either ticking the clock manually or enabling continuous ticks.
+
+Note that in order to pipeline the circuit, we need a register to hold the intermediate value of the computation between pipeline stages. This is a general theme with pipelines.
+
+#### Action Item
+
+* Complete the sub-circuit pipelined. You will need to add a register to divide the multiplication and addition stages up.
+* Calculate the maximum clock rate for the pipelined version of the circuit that you have created.
+
+#### [Checkoff]()
+
+* Show your TA the completed, pipelined circuit.
+* Show your TA the calculations you performed to find the maximum clock rate (pipelined).
+
+#### Futher thinking (Optional)
+
+* Is there any better implementation for Adder and Multiplier?
+* The pipeline multiplier we implemented requires more than one clock cycle to complete calculations. Do you know any instructions having similar situations in modern CPUs? How are modern CPUs compatible with this situation?
