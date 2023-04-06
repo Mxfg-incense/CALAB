@@ -365,6 +365,10 @@ Complete the following steps to create the splitter circuit, and show this to yo
 3. Now refer to the `non-pipelined` circuit. Play with the inputs to see if your implementation is correct, and adjust your design if necessary.
 4. Let the propagation delay of an adder block be 45ns, the propagation delay of MUX be 20ns, and the propagation delay of a shifters block (since we have a const offset, it is very efficient) be 5ns. The register has a CLK-to-Q delay of 10ns, setup time of 10ns, and hold time of 5ns. Calculate the maximum clock rate at which this circuit can operate. Assume that both inputs come from clocked registers that receive their data from an outside source.
 
+$$
+T = t_{clk-to-q} + t_{combination}+t_{setup} = 10 + 4(20+45) + 10 = 280ns
+$$
+
 #### [Checkoff]()
 
 * Show your TA the calculations you performed to find the maximum clock rate (non-pipelined).
@@ -381,6 +385,9 @@ Note that in order to pipeline the circuit, we need a register to hold the inter
 
 * Complete the sub-circuit pipelined. You will need to add a register to divide the multiplication and addition stages up.
 * Calculate the maximum clock rate for the pipelined version of the circuit that you have created.
+  $$
+  T = t_{clk-to-q} + t_{combination}+t_{setup} = 10 + 2(20+45) + 10 = 150ns
+  $$
 
 #### [Checkoff]()
 
