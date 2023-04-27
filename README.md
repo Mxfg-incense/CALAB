@@ -567,7 +567,7 @@ To make the program even faster, we can apply **cache blocking** to the function
 
 1. Why there is a gap between gb_v and gb_h ?
    `img.data+img.numChannels* (y*img.dimX+x)`
-   in gb_h cache access is far 
+   in gb_h cache access is far
 2. Why the changed execution order will achieve a better performance even if we do more things(transpose)?
 
 ## Exercise 3: Effort of Cache Miss
@@ -595,3 +595,190 @@ In the function tranverse(), we only use three members in the log_entry. However
 ---
 
 Linjie Ma <`malj` AT `shanghaitech.edu.cn`>Modeled after UC Berkeley's CS61C.Last modified: 2022-04-5
+
+
+# CS110 Lab 9
+
+Download the starter code [here](https://toast-lab.sist.shanghaitech.edu.cn/courses/CS110@ShanghaiTech/Spring-2023/labs/lab9/lab9.tar)## Introduction to SIMD
+
+[SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) makes a program faster by executing the same instruction on multiple data at the same time. In this lab, we will use [Intel Intrinsics](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html) to implement simple programs.## Part 1: Vector addition
+
+In this part, you will implement a vector addition program using SIMD. Please "translate" naive_add() to simd_add().
+You may use the following intrinsics, search in the [Intel Intrinsics Guide](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html):* _mm_loadu_si128
+
+* _mm_storeu_si128
+* _mm_add_epi32
+
+Try to tell the difference of the following "load" intrisics:* _mm_load_si128
+
+* _mm_loadu_si128
+* _mm_load_pd
+* _mm_load1_pd
+
+这些 intrinsics 都是针对 SSE 指令集的，主要用于优化处理一些涉及大量浮点运算的应用，例如图形图像处理、声音处理等。在处理这些类型应用时，使用 SSE 指令可以提高计算速度和效率
+
+
+---
+
+**_mm_loadu_si128 函数是用于加载一个 128 位（16 字节）无序的数据存储到一个 __m128i 类型的变量中。**
+
+**_mm_storeu_si128 函数是用于将一个 __m128i 类型的数据存储到一个 128 位（16 字节）未对齐的内存地址中。**
+
+**_mm_add_epi32 函数是执行两个 __m128i 变量的 32 位整数相加，返回一个 128 位的结果。**
+
+**mm_load_si128 用于加载一个 128 位的有序的数据存储到一个 __m128i 变量中。这个内存地址必须是 16 字节对齐的。**
+
+**_mm_loadu_si128 用于加载一个 128 位的无序的数据存储到一个 __m128i 变量中。这个内存地址可以是任意对齐的。**
+
+**_mm_load_pd 用于加载两个双精度浮点数（128 位的前后 64 位）到一个 __m128d 变量中。这个内存地址必须是 16 字节对齐的。**
+
+**_mm_load1_pd 用于重复加载一个双精度浮点数到一个 __m128d 变量中的两个位置。这个内存地址必须是 8 字节对齐的。**
+
+**这些函数的选择要根据加载数据存储的内存地址对齐方式来决定。有对齐限制的指令执行速度快于没有对齐限制的指令**
+
+**_mm_setzero_ps 用于创建一个全 0 的 128 位浮点数变量 __m128。**
+
+**_mm_set1_ps 用于创建一个 128 位浮点数变量 __m128，并将其所有 4 个单精度浮点数元素初始化为同一个值。**
+
+**_mm_loadu_ps 用于加载一个 128 位的无序的数据存储到一个 __m128 变量中。这个内存地址可以是任意对齐的。**
+
+**_mm_add_ps 用于执行两个 __m128 变量的单精度浮点数相加，并返回一个 128 位的结果。**
+
+**_mm_mul_ps 用于执行两个 __m128 变量的单精度浮点数相乘，并返回一个 128 位的结果。**
+
+**_mm_storeu_ps 用于将一个 __m128 类型的数据存储到一个 128 位（16 字节）未对齐的内存地址中。**
+
+## Part 2: Matrix multiplication
+
+In this part, you will implement a matrix multiplication program using SIMD. Please "translate" naive_matmul() to simd_matmul().
+You may use the following intrinsics:* _mm_setzero_ps
+
+* _mm_set1_ps
+* _mm_loadu_ps
+* _mm_add_ps
+* _mm_mul_ps
+* _mm_storeu_ps
+
+Explain why this makes the program faster.## Part 3: Loop unrolling
+
+Read Wikipedia and try to understand the concept of loop unrolling:* [Loop unrolling](https://en.wikipedia.org/wiki/Loop_unrolling)
+
+Implement loop_unroll_matmul() and loop_unroll_simd_matmul(), explain the performance boost they brought.
+
+## Part 4: Compiler optimization
+
+Run `make test`, explain why `-O3` makes the program much faster.
+
+---
+
+Running part2_3.c with -O0
+naive: 12.565695
+simd: 4.857591
+unroll: 8.165401
+unroll+simd: 3.864877
+Running part2_3.c with -O3
+naive: 1.132854
+simd: 1.227327
+unroll: 0.389392
+
+---
+
+
+
+
+For checkup: Put this piece of code into [godbolt.org](https://godbolt.org/) , compile them with a risc-v compiler, and tell the difference between `-O0` and `-O3`.
+
+```
+int a = 0;
+
+void modify(int j) {
+    a += j;
+}
+
+
+int main() {
+    for (int i = 0; i < 1000; i++) {
+        a += 1;
+    }
+
+    for (int i = 0; i < 1000; i++) {
+        a += i;
+    }
+
+    return a;
+}
+```
+
+
+```
+a:
+        .zero   4
+modify:
+        addi    sp,sp,-32
+        sd      s0,24(sp)
+        addi    s0,sp,32
+        mv      a5,a0
+        sw      a5,-20(s0)
+        lui     a5,%hi(a)
+        lw      a5,%lo(a)(a5)
+        lw      a4,-20(s0)
+        addw    a5,a4,a5
+        sext.w  a4,a5
+        lui     a5,%hi(a)
+        sw      a4,%lo(a)(a5)
+        nop
+        ld      s0,24(sp)
+        addi    sp,sp,32
+        jr      ra
+main:
+        addi    sp,sp,-32
+        sd      s0,24(sp)
+        addi    s0,sp,32
+        sw      zero,-20(s0)
+        j       .L3
+.L4:
+        lui     a5,%hi(a)
+        lw      a5,%lo(a)(a5)
+        addiw   a5,a5,1
+        sext.w  a4,a5
+        lui     a5,%hi(a)
+        sw      a4,%lo(a)(a5)
+        lw      a5,-20(s0)
+        addiw   a5,a5,1
+        sw      a5,-20(s0)
+.L3:
+        lw      a5,-20(s0)
+        sext.w  a4,a5
+        li      a5,999
+        ble     a4,a5,.L4
+        sw      zero,-24(s0)
+        j       .L5
+.L6:
+        lui     a5,%hi(a)
+        lw      a5,%lo(a)(a5)
+        lw      a4,-24(s0)
+        addw    a5,a4,a5
+        sext.w  a4,a5
+        lui     a5,%hi(a)
+        sw      a4,%lo(a)(a5)
+        lw      a5,-24(s0)
+        addiw   a5,a5,1
+        sw      a5,-24(s0)
+.L5:
+        lw      a5,-24(s0)
+        sext.w  a4,a5
+        li      a5,999
+        ble     a4,a5,.L6
+        lui     a5,%hi(a)
+        lw      a5,%lo(a)(a5)
+        mv      a0,a5
+        ld      s0,24(sp)
+        addi    sp,sp,32
+        jr      ra
+```
+
+---
+
+Suting Chen <`chenst` AT `shanghaitech.edu.cn`>
+
+Last modified: 2023-04-12
