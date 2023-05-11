@@ -4,7 +4,7 @@
 #include <math.h>
 
 #define MATRIX_SIZE 1024
-
+double *ans;
 void matmul_naive(double *a, double *b, double **cc)
 {
   double *c = (double *)calloc(MATRIX_SIZE * MATRIX_SIZE, sizeof(double));
@@ -19,7 +19,7 @@ void matmul_naive(double *a, double *b, double **cc)
     }
   }
   *cc = c;
-  free(c);
+  ans = c;
 }
 
 void matmul_optimized_slices(double *a, double *b, double **cc)
@@ -44,7 +44,7 @@ void matmul_optimized_slices(double *a, double *b, double **cc)
     }
   }
   *cc = c;
-  free(c);
+
 }
 
 void matmul_optimized_chunks(double *a, double *b, double **cc)
@@ -70,7 +70,7 @@ void matmul_optimized_chunks(double *a, double *b, double **cc)
       for (int j = 0; j < MATRIX_SIZE; j++)
       {
         {
-          c[(i - begin) * MATRIX_SIZE + j] += a[i * MATRIX_SIZE + k] * b[k * MATRIX_SIZE + j];
+          c[i * MATRIX_SIZE + j] += a[i * MATRIX_SIZE + k] * b[k * MATRIX_SIZE + j];
         }
       }
     }
@@ -84,7 +84,6 @@ void matmul_optimized_chunks(double *a, double *b, double **cc)
 
   }
     *cc = c;
-    free(c);
 }
 
 
@@ -123,7 +122,7 @@ int main()
 
   double begin_time = omp_get_wtime();
   matmul_naive(a, b, &c);
-  double* ans = c;
+ 
   double end_time = omp_get_wtime();
   printf("Naive: %.5f seconds\n", end_time - begin_time);
 
@@ -143,5 +142,6 @@ int main()
   free(a);
   free(b);
   free(c);
+  free(ans);
   return 0;
 }
